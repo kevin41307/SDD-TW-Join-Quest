@@ -10,6 +10,7 @@ ENV/
 .venv
 .pytest_cache/
 .behave_cache/
+reports/
 
 # IDE
 .vscode/
