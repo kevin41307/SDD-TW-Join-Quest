@@ -88,7 +88,6 @@ Feature: E-commerce Order Pricing Promotions
       | productName | quantity |
       | T-shirt     | 3        |
       | 口紅          | 2        |
-Feature 雙十一優惠
 
   Scenario: 雙十一優惠 - 購買 12 件相同商品
     Given 同一種商品每買 10 件，則該 10 件同種商品的價格總和會享有 20% 的折扣

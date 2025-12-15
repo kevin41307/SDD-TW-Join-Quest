@@ -11,6 +11,7 @@ class OrderService:
         """初始化 OrderService"""
         self.threshold_config = None
         self.bogo_cosmetics_enabled = False
+        self.double_eleven_enabled = False
     
     def set_threshold_discount(self, threshold, discount):
         """
@@ -34,6 +35,15 @@ class OrderService:
         """
         self.bogo_cosmetics_enabled = enabled
     
+    def set_double_eleven_promotion(self, enabled):
+        """
+        設定雙十一優惠：同一種商品每買 10 件，該 10 件享有 20% 折扣
+        
+        Args:
+            enabled: 是否啟用雙十一優惠
+        """
+        self.double_eleven_enabled = enabled
+    
     def calculate_order(self, order_items):
         """
         計算訂單總金額和客戶收到的商品
@@ -47,6 +57,7 @@ class OrderService:
         # 計算原始總金額和處理 BOGO
         original_amount = 0
         received_items = []
+        double_eleven_discount = 0  # 雙十一優惠折扣總額
         
         for item in order_items:
             quantity = item['quantity']
@@ -66,6 +77,18 @@ class OrderService:
                 received_quantity = quantity
                 item_total = quantity * unit_price
             
+            # 處理雙十一優惠：同一種商品每買 10 件，該 10 件享有 20% 折扣
+            if self.double_eleven_enabled:
+                # 計算有多少組 10 件可以享有折扣
+                discount_groups = quantity // 10
+                if discount_groups > 0:
+                    # 每組 10 件的價格
+                    group_price = 10 * unit_price
+                    # 每組的折扣 = 20% 折扣
+                    group_discount = group_price * 0.2
+                    # 累加所有折扣
+                    double_eleven_discount += discount_groups * group_discount
+            
             original_amount += item_total
             received_items.append({
                 'productName': product_name,
@@ -73,22 +96,25 @@ class OrderService:
             })
         
         # 計算門檻折扣
-        discount = 0
+        threshold_discount = 0
         if self.threshold_config and original_amount >= self.threshold_config['threshold']:
-            discount = self.threshold_config['discount']
+            threshold_discount = self.threshold_config['discount']
+        
+        # 計算總折扣（雙十一優惠 + 門檻折扣）
+        total_discount = double_eleven_discount + threshold_discount
         
         # 計算最終總金額
-        total_amount = original_amount - discount
+        total_amount = original_amount - total_discount
         
         result = {
             'totalAmount': total_amount,
             'items': received_items
         }
         
-        # 如果有折扣，加入原始金額和折扣資訊
-        if discount > 0:
+        # 如果有折扣，或啟用了雙十一優惠（需要顯示 originalAmount），加入原始金額和折扣資訊
+        if total_discount > 0 or self.double_eleven_enabled:
             result['originalAmount'] = original_amount
-            result['discount'] = discount
+            result['discount'] = int(total_discount)
         
         return result
 

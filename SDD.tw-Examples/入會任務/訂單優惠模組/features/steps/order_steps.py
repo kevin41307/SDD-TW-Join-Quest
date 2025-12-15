@@ -30,6 +30,23 @@ def step_bogo_cosmetics_active(context):
     context.order_service.set_bogo_cosmetics(True)
 
 
+@given('同一種商品每買 10 件，則該 10 件同種商品的價格總和會享有 20% 的折扣')
+def step_double_eleven_promotion(context):
+    """設定雙十一優惠：同一種商品每買 10 件，該 10 件享有 20% 折扣"""
+    if not hasattr(context, 'order_service'):
+        context.order_service = OrderService()
+    context.order_service.set_double_eleven_promotion(True)
+
+
+@given('購買商品 A, B, C, D, E, F, G, H, I, J 各一件')
+def step_buy_ten_different_products(context):
+    """設定購買 10 件不同商品的情況，啟用雙十一優惠但確認不適用於不同商品"""
+    if not hasattr(context, 'order_service'):
+        context.order_service = OrderService()
+    # 啟用雙十一優惠，但因為是不同商品，所以不應該享有折扣
+    context.order_service.set_double_eleven_promotion(True)
+
+
 @when('a customer places an order with:')
 def step_place_order(context):
     """客戶下訂單"""
